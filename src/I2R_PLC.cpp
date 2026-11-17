@@ -32,7 +32,18 @@ I2R_PLC::I2R_PLC(I2R_Board board) : _board(board) {
     _inStable[i] = _inLastRead[i] = _inRise[i] = _inFall[i] = _inEverOn[i] = false;
     _inReadChange[i] = _inStableChange[i] = 0;
     _out[i] = false;
+    _offPending[i] = false;
+    _offStart[i] = _offAfterMs[i] = 0;
   }
+}
+
+const char* I2R_PLC::type() const {
+  switch (_board) {
+    case I2R_02: return "i2r-02";
+    case I2R_03: return "i2r-03";
+    case I2R_04: return "i2r-04";
+  }
+  return "unknown";
 }
 
 void I2R_PLC::begin() {
@@ -40,6 +51,7 @@ void I2R_PLC::begin() {
     pinMode(_outPins[i], OUTPUT);
     digitalWrite(_outPins[i], LOW);  // 꺼진 상태에서 시작
     _out[i] = false;
+    _offPending[i] = false;
   }
   for (uint8_t i = 0; i < _numIn; i++) {
     pinMode(_inPins[i], INPUT);
@@ -79,14 +91,39 @@ void I2R_PLC::update() {
       else   { _inFall[i] = true; }
     }
   }
+  // 자동 끄기: 정한 시간이 지난 출력을 끈다
+  for (uint8_t i = 0; i < _numOut; i++) {
+    if (_offPending[i] && now - _offStart[i] >= _offAfterMs[i]) {
+      output(i + 1, false);  // 여기서 _offPending도 지워진다
+    }
+  }
+
   if (_hasSensor) sensorUpdate();
 }
 
 // ---- 출력 ----
-void I2R_PLC::output(uint8_t n, bool on) {
-  if (!validOut(n)) return;
-  _out[n - 1] = on;
-  digitalWrite(_outPins[n - 1], on ? HIGH : LOW);
+bool I2R_PLC::output(uint8_t n, bool on, uint32_t seconds) {
+  if (!validOut(n)) {
+    // 같은 번호는 한 번만 알린다 (loop에서 계속 불러도 시리얼이 넘치지 않게)
+    uint32_t bit = (n < 32) ? (1UL << n) : 0;
+    if (!bit || !(_warned & bit)) {
+      _warned |= bit;
+      Serial.printf("[I2R_PLC] OUT%u은(는) %s에 없습니다. 1~%u 중에서 고르세요.\n",
+                    n, type(), _numOut);
+    }
+    return false;
+  }
+  uint8_t i = n - 1;
+  _out[i] = on;
+  digitalWrite(_outPins[i], on ? HIGH : LOW);
+
+  // 켜면서 시간을 주면 자동 끄기 예약, 그 밖에는 예약 취소
+  _offPending[i] = on && seconds > 0;
+  if (_offPending[i]) {
+    _offStart[i] = millis();
+    _offAfterMs[i] = seconds * 1000UL;
+  }
+  return true;
 }
 
 void I2R_PLC::toggle(uint8_t n) {

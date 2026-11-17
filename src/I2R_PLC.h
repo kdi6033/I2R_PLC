@@ -35,11 +35,14 @@ public:
   void update();  // loop() 맨 앞에서 매번. 입력 읽기, 떨림 제거, 센서 읽기
 
   I2R_Board board() const { return _board; }
+  const char* type() const;  // 옛 펌웨어와 같은 보드 이름 "i2r-02", "i2r-03", "i2r-04"
   uint8_t inputCount() const { return _numIn; }
   uint8_t outputCount() const { return _numOut; }
 
-  // ---- 출력 (n = 1부터) ----
-  void output(uint8_t n, bool on);  // 출력 n을 켜거나 끈다
+  // ---- 출력 (n = 1부터, 보드 단자의 OUT1이 1) ----
+  // 출력 n을 켜거나 끈다. seconds를 주면 켠 뒤 그 시간(초)이 지나 자동으로 끈다 (update() 필요).
+  // 없는 포트 번호면 아무 핀도 건드리지 않고 시리얼에 알린 뒤 false를 돌려준다.
+  bool output(uint8_t n, bool on, uint32_t seconds = 0);
   void toggle(uint8_t n);           // 출력 n을 반대로
   void allOff();                    // 모든 출력 끄기
   bool outputState(uint8_t n) const;  // 출력 n이 켜져 있는지
@@ -89,6 +92,10 @@ private:
   unsigned long _inReadChange[MAX_CH];    // 읽은 값이 바뀐 시각 (떨림 제거용)
   unsigned long _inStableChange[MAX_CH];  // 떨림을 걸러 낸 상태가 바뀐 시각 (타이머용)
   bool _out[MAX_CH];
+  bool _offPending[MAX_CH];          // 자동 끄기가 예약돼 있는지
+  unsigned long _offStart[MAX_CH];   // 켠 시각
+  unsigned long _offAfterMs[MAX_CH]; // 켠 뒤 끌 때까지의 시간
+  uint32_t _warned = 0;              // 없는 포트 번호를 이미 알렸는지 (번호마다 한 번만)
 
   bool _hasSensor = false;
   bool _sensorOk = false;

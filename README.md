@@ -49,13 +49,15 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | `I2R_PLC plc(I2R_03)` | 보드 종류를 정해 만든다 |
 | `plc.begin()` | `setup()`에서 한 번. 핀 설정, 출력 모두 끄기, 센서 찾기 |
 | `plc.update()` | `loop()` 맨 앞에서 매번. 입력 읽기, 떨림 제거, 센서 읽기 |
+| `plc.type()` | 보드 이름 `"i2r-02"`, `"i2r-03"`, `"i2r-04"` (옛 i2r 펌웨어의 type과 같음) |
 | `plc.inputCount()`, `plc.outputCount()` | 입력, 출력 개수 (4 또는 8) |
 
 ### 출력 (번호는 1부터)
 
 | 함수 | 설명 |
 |---|---|
-| `plc.output(n, ON)` / `plc.output(n, OFF)` | 출력 n 켜기 / 끄기 |
+| `plc.output(n, ON)` / `plc.output(n, OFF)` | 출력 n 켜기 / 끄기. 없는 번호면 아무것도 켜지 않고 시리얼에 알린 뒤 `false` |
+| `plc.output(n, ON, 초)` | 켜고 정한 시간(초) 뒤 자동으로 끄기 (`update()`가 끔) |
 | `plc.toggle(n)` | 출력 n을 반대로 |
 | `plc.allOff()` | 모든 출력 끄기 |
 | `plc.outputState(n)` | 출력 n이 켜져 있으면 `true` |
@@ -91,6 +93,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 
 | 예제 | 내용 |
 |---|---|
+| OutputTest | 보드 이름, 켜기/끄기, 자동 끄기, 없는 번호 알림 확인 |
 | OutputBlink | 출력을 1초씩 차례로 켜기 |
 | InputToOutput | 입력이 들어오면 같은 번호의 출력 켜기 |
 | ToggleSwitch | IN1을 누를 때마다 OUT1 켜고 끄기 |
