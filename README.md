@@ -58,6 +58,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 |---|---|
 | `plc.output(n, ON)` / `plc.output(n, OFF)` | 출력 n 켜기 / 끄기. 없는 번호면 아무것도 켜지 않고 시리얼에 알린 뒤 `false` |
 | `plc.output(n, ON, 초)` | 켜고 정한 시간(초) 뒤 자동으로 끄기 (`update()`가 끔) |
+| `plc.output(n, ON, 기다림초, 동작초)` | 기다린 뒤 켜고, 동작 시간이 지나면 끄기. 동작초가 0이면 켜 둔 채로 둠 |
 | `plc.toggle(n)` | 출력 n을 반대로 |
 | `plc.allOff()` | 모든 출력 끄기 |
 | `plc.outputState(n)` | 출력 n이 켜져 있으면 `true` |
@@ -93,7 +94,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 
 | 예제 | 내용 |
 |---|---|
-| OutputTest | 보드 이름, 켜기/끄기, 자동 끄기, 없는 번호 알림 확인 |
+| OutputTest | 보드 이름, 켜기/끄기, 자동 끄기, 늦게 켜기, 없는 번호 알림 확인 |
 | OutputBlink | 출력을 1초씩 차례로 켜기 |
 | InputToOutput | 입력이 들어오면 같은 번호의 출력 켜기 |
 | ToggleSwitch | IN1을 누를 때마다 OUT1 켜고 끄기 |

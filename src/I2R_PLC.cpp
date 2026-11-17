@@ -32,8 +32,9 @@ I2R_PLC::I2R_PLC(I2R_Board board) : _board(board) {
     _inStable[i] = _inLastRead[i] = _inRise[i] = _inFall[i] = _inEverOn[i] = false;
     _inReadChange[i] = _inStableChange[i] = 0;
     _out[i] = false;
-    _offPending[i] = false;
-    _offStart[i] = _offAfterMs[i] = 0;
+    _pend[i] = 0;
+    _pendOn[i] = false;
+    _pendStart[i] = _pendMs[i] = _pendDurMs[i] = 0;
   }
 }
 
@@ -51,7 +52,7 @@ void I2R_PLC::begin() {
     pinMode(_outPins[i], OUTPUT);
     digitalWrite(_outPins[i], LOW);  // 꺼진 상태에서 시작
     _out[i] = false;
-    _offPending[i] = false;
+    _pend[i] = 0;
   }
   for (uint8_t i = 0; i < _numIn; i++) {
     pinMode(_inPins[i], INPUT);
@@ -91,10 +92,21 @@ void I2R_PLC::update() {
       else   { _inFall[i] = true; }
     }
   }
-  // 자동 끄기: 정한 시간이 지난 출력을 끈다
+  // 예약된 출력: 기다리는 시간이 지나면 바꾸고, 동작 시간이 지나면 끈다
   for (uint8_t i = 0; i < _numOut; i++) {
-    if (_offPending[i] && now - _offStart[i] >= _offAfterMs[i]) {
-      output(i + 1, false);  // 여기서 _offPending도 지워진다
+    if (_pend[i] == 0 || now - _pendStart[i] < _pendMs[i]) continue;
+    if (_pend[i] == 1) {
+      writeOut(i, _pendOn[i]);
+      if (_pendOn[i] && _pendDurMs[i] > 0) {  // 켰고 동작 시간이 있으면 끄기 예약
+        _pend[i] = 2;
+        _pendStart[i] = now;
+        _pendMs[i] = _pendDurMs[i];
+      } else {
+        _pend[i] = 0;
+      }
+    } else {
+      writeOut(i, false);
+      _pend[i] = 0;
     }
   }
 
@@ -102,27 +114,46 @@ void I2R_PLC::update() {
 }
 
 // ---- 출력 ----
-bool I2R_PLC::output(uint8_t n, bool on, uint32_t seconds) {
-  if (!validOut(n)) {
-    // 같은 번호는 한 번만 알린다 (loop에서 계속 불러도 시리얼이 넘치지 않게)
-    uint32_t bit = (n < 32) ? (1UL << n) : 0;
-    if (!bit || !(_warned & bit)) {
-      _warned |= bit;
-      Serial.printf("[I2R_PLC] OUT%u은(는) %s에 없습니다. 1~%u 중에서 고르세요.\n",
-                    n, type(), _numOut);
-    }
-    return false;
+bool I2R_PLC::checkOut(uint8_t n) {
+  if (validOut(n)) return true;
+  // 같은 번호는 한 번만 알린다 (loop에서 계속 불러도 시리얼이 넘치지 않게)
+  uint32_t bit = (n < 32) ? (1UL << n) : 0;
+  if (!bit || !(_warned & bit)) {
+    _warned |= bit;
+    Serial.printf("[I2R_PLC] OUT%u은(는) %s에 없습니다. 1~%u 중에서 고르세요.\n",
+                  n, type(), _numOut);
   }
-  uint8_t i = n - 1;
+  return false;
+}
+
+void I2R_PLC::writeOut(uint8_t i, bool on) {
   _out[i] = on;
   digitalWrite(_outPins[i], on ? HIGH : LOW);
+}
+
+bool I2R_PLC::output(uint8_t n, bool on, uint32_t seconds) {
+  if (!checkOut(n)) return false;
+  uint8_t i = n - 1;
+  writeOut(i, on);
 
   // 켜면서 시간을 주면 자동 끄기 예약, 그 밖에는 예약 취소
-  _offPending[i] = on && seconds > 0;
-  if (_offPending[i]) {
-    _offStart[i] = millis();
-    _offAfterMs[i] = seconds * 1000UL;
+  _pend[i] = (on && seconds > 0) ? 2 : 0;
+  if (_pend[i]) {
+    _pendStart[i] = millis();
+    _pendMs[i] = seconds * 1000UL;
   }
+  return true;
+}
+
+bool I2R_PLC::output(uint8_t n, bool on, uint32_t delaySec, uint32_t durationSec) {
+  if (delaySec == 0) return output(n, on, durationSec);  // 기다릴 시간이 없으면 바로
+  if (!checkOut(n)) return false;
+  uint8_t i = n - 1;
+  _pend[i] = 1;
+  _pendOn[i] = on;
+  _pendStart[i] = millis();
+  _pendMs[i] = delaySec * 1000UL;
+  _pendDurMs[i] = durationSec * 1000UL;
   return true;
 }
 

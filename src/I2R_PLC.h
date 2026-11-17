@@ -43,6 +43,11 @@ public:
   // 출력 n을 켜거나 끈다. seconds를 주면 켠 뒤 그 시간(초)이 지나 자동으로 끈다 (update() 필요).
   // 없는 포트 번호면 아무 핀도 건드리지 않고 시리얼에 알린 뒤 false를 돌려준다.
   bool output(uint8_t n, bool on, uint32_t seconds = 0);
+  // delaySec초 기다린 뒤 출력 n을 켜고(끄고), 켰다면 durationSec초 동안 동작한 뒤 자동으로 끈다.
+  //   plc.output(2, ON, 3, 3);  // 3초 뒤 켜고, 3초 동작한 뒤 끄기
+  //   plc.output(2, ON, 3, 0);  // 3초 뒤 켜고 계속 켜 두기
+  // 기다리는 동안 출력은 지금 상태 그대로다. 그사이 같은 출력에 output()을 다시 부르면 예약이 취소된다.
+  bool output(uint8_t n, bool on, uint32_t delaySec, uint32_t durationSec);
   void toggle(uint8_t n);           // 출력 n을 반대로
   void allOff();                    // 모든 출력 끄기
   bool outputState(uint8_t n) const;  // 출력 n이 켜져 있는지
@@ -92,9 +97,14 @@ private:
   unsigned long _inReadChange[MAX_CH];    // 읽은 값이 바뀐 시각 (떨림 제거용)
   unsigned long _inStableChange[MAX_CH];  // 떨림을 걸러 낸 상태가 바뀐 시각 (타이머용)
   bool _out[MAX_CH];
-  bool _offPending[MAX_CH];          // 자동 끄기가 예약돼 있는지
-  unsigned long _offStart[MAX_CH];   // 켠 시각
-  unsigned long _offAfterMs[MAX_CH]; // 켠 뒤 끌 때까지의 시간
+  // 예약: 0 = 없음, 1 = 기다리는 중(지나면 _pendOn으로 바꿈), 2 = 동작 중(지나면 끔)
+  uint8_t _pend[MAX_CH];
+  bool _pendOn[MAX_CH];              // 기다린 뒤 바꿀 값
+  unsigned long _pendStart[MAX_CH];  // 지금 단계를 시작한 시각
+  unsigned long _pendMs[MAX_CH];     // 지금 단계의 길이
+  unsigned long _pendDurMs[MAX_CH];  // 켠 뒤 동작할 시간 (기다리는 단계에서 쓸 값)
+  bool checkOut(uint8_t n);          // 없는 포트면 시리얼에 알리고 false
+  void writeOut(uint8_t i, bool on); // 핀과 상태만 바꾼다 (예약은 건드리지 않음)
   uint32_t _warned = 0;              // 없는 포트 번호를 이미 알렸는지 (번호마다 한 번만)
 
   bool _hasSensor = false;
