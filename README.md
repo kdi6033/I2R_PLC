@@ -89,8 +89,8 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 
 | 함수 | 설명 | 상태 |
 |---|---|:---:|
-| `plc.count(n)` | CTU. 입력 n이 들어온 횟수 (떨림 제거 뒤, `begin()`부터) | 🛠️ |
-| `plc.resetCount(n)` | 입력 n의 횟수를 0으로 | 🛠️ |
+| `plc.count(n)` | CTU. 입력 n이 들어온 횟수 (떨림 제거 뒤, `begin()`부터) | ✅ |
+| `plc.resetCount(n)` | 입력 n의 횟수를 0으로 | ✅ |
 
 ### 상태 알리기 (원격 제어용)
 
@@ -126,7 +126,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | OnDelay | IN1을 3초 넣고 있어야 OUT1 켜기 (TON) | ✅ |
 | TempRelay | 30도 이상 OUT1 켜기, 28도 이하 끄기 (i2r-03) | ✅ |
 | BoardCheck | 입력, 출력, 버튼, 온습도를 1초마다 시리얼로 보기 | ✅ |
-| Counter | IN1이 5번 들어오면 OUT1 켜기, IN2로 처음부터 (CTU) | 🛠️ |
+| Counter | IN1이 5번 들어오면 OUT1 켜기, IN2로 처음부터 (CTU) | ✅ |
 | BlinkOutput | IN1이 들어오면 OUT1 깜빡이기, IN2로 멈춤 | 🛠️ |
 | StateReport | 출력이 바뀔 때 알림, 입력이 바뀔 때만 보여 주기, 남은 시간, 시리얼로 `1010` 넣어 출력 한꺼번에 바꾸기 | 🛠️ |
 
