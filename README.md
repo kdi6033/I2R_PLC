@@ -89,8 +89,8 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 |---|---|:---:|
 | `plc.led(ON)` | 보드 내장 LED | 🛠️ |
 | `plc.button()` | 공장 초기화 버튼이 눌려 있으면 `true` | 🛠️ |
-| `plc.temperature()`, `plc.humidity()` | i2r-03 온도(℃), 습도(%RH). 센서가 없으면 `NAN` | 🛠️ |
-| `plc.sensorOk()` | 온습도 센서를 찾았으면 `true` | 🛠️ |
+| `plc.temperature()`, `plc.humidity()` | i2r-03 온도(℃), 습도(%RH). 센서가 없으면 `NAN` | ✅ |
+| `plc.sensorOk()` | 온습도 센서를 찾았으면 `true` | ✅ |
 
 온습도는 라이브러리가 2초마다 읽어 둡니다. 따로 설치할 라이브러리는 없습니다.
 
@@ -105,7 +105,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | ToggleSwitch | IN1을 누를 때마다 OUT1 켜고 끄기 | ✅ |
 | StairLight | IN1이 꺼진 뒤에도 5초 더 OUT1 켜 두기 (TOF) | ✅ |
 | OnDelay | IN1을 3초 넣고 있어야 OUT1 켜기 (TON) | ✅ |
-| TempRelay | 30도 이상 OUT1 켜기, 28도 이하 끄기 (i2r-03) | 🛠️ |
+| TempRelay | 30도 이상 OUT1 켜기, 28도 이하 끄기 (i2r-03) | ✅ |
 | BoardCheck | 입력, 출력, 버튼, 온습도를 1초마다 시리얼로 보기 | 🛠️ |
 
 예제는 `I2R_PLC plc(I2R_03);`로 되어 있습니다. 내 보드에 맞게 `I2R_02`나 `I2R_04`로 바꾸세요.
