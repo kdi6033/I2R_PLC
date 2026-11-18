@@ -80,7 +80,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 
 | 함수 | 설명 | 상태 |
 |---|---|:---:|
-| `plc.onDelay(n, ms)` | TON. 입력 n이 ms 동안 계속 들어와 있으면 `true`, 꺼지면 바로 `false` | 🛠️ |
+| `plc.onDelay(n, ms)` | TON. 입력 n이 ms 동안 계속 들어와 있으면 `true`, 꺼지면 바로 `false` | ✅ |
 | `plc.offDelay(n, ms)` | TOF. 입력 n이 들어와 있는 동안, 그리고 꺼진 뒤 ms 동안 `true` | ✅ |
 
 ### 보드
@@ -104,7 +104,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | InputToOutput | 입력이 들어오면 같은 번호의 출력 켜기 | ✅ |
 | ToggleSwitch | IN1을 누를 때마다 OUT1 켜고 끄기 | ✅ |
 | StairLight | IN1이 꺼진 뒤에도 5초 더 OUT1 켜 두기 (TOF) | ✅ |
-| OnDelay | IN1을 3초 넣고 있어야 OUT1 켜기 (TON) | 🛠️ |
+| OnDelay | IN1을 3초 넣고 있어야 OUT1 켜기 (TON) | ✅ |
 | TempRelay | 30도 이상 OUT1 켜기, 28도 이하 끄기 (i2r-03) | 🛠️ |
 | BoardCheck | 입력, 출력, 버튼, 온습도를 1초마다 시리얼로 보기 | 🛠️ |
 
