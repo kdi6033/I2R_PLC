@@ -74,7 +74,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | `plc.input(n)` | 입력 n이 들어와 있으면 `true` (30ms 떨림 제거) | ✅ |
 | `plc.rising(n)` | 입력 n이 막 들어온 순간에만 `true` | ✅ |
 | `plc.falling(n)` | 입력 n이 막 꺼진 순간에만 `true` | ✅ |
-| `plc.setDebounce(ms)` | 떨림 제거 시간 바꾸기 (기본 30ms) | 🛠️ |
+| `plc.setDebounce(ms)` | 떨림 제거 시간 바꾸기 (기본 30ms) | ✅ |
 
 ### 타이머 (PLC식)
 
@@ -100,7 +100,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 |---|---|:---:|
 | OutputTest | 보드 이름, 켜기/끄기, 자동 끄기, 늦게 켜기, 없는 번호 알림 확인 | ✅ |
 | InputTest | 입력이 들어오는/꺼지는 순간, 들어온 횟수(떨림 확인), 전체 입력 상태 보기 (출력은 안 씀) | ✅ |
-| DebounceTest | 떨림 제거 시간(setDebounce)을 시리얼에서 숫자로 바꿔 가며 눌린 횟수 비교 (출력은 안 씀) | 🛠️ |
+| DebounceTest | 떨림 제거 시간(setDebounce)을 시리얼에서 숫자로 바꿔 가며 눌린 횟수 비교 (출력은 안 씀) | ✅ |
 | OutputBlink | 출력을 1초씩 차례로 켜기 | ✅ |
 | InputToOutput | 입력이 들어오면 같은 번호의 출력 켜기 | ✅ |
 | ToggleSwitch | IN1을 누를 때마다 OUT1 켜고 끄기 | ✅ |
