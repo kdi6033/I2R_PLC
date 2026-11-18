@@ -101,7 +101,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | OutputTest | 보드 이름, 켜기/끄기, 자동 끄기, 늦게 켜기, 없는 번호 알림 확인 | ✅ |
 | InputTest | 입력이 들어오는/꺼지는 순간, 들어온 횟수(떨림 확인), 전체 입력 상태 보기 (출력은 안 씀) | ✅ |
 | OutputBlink | 출력을 1초씩 차례로 켜기 | ✅ |
-| InputToOutput | 입력이 들어오면 같은 번호의 출력 켜기 | 🛠️ |
+| InputToOutput | 입력이 들어오면 같은 번호의 출력 켜기 | ✅ |
 | ToggleSwitch | IN1을 누를 때마다 OUT1 켜고 끄기 | 🛠️ |
 | StairLight | IN1이 꺼진 뒤에도 5초 더 OUT1 켜 두기 (TOF) | 🛠️ |
 | OnDelay | IN1을 3초 넣고 있어야 OUT1 켜기 (TON) | 🛠️ |
