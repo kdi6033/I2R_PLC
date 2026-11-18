@@ -51,6 +51,24 @@ public:
   void toggle(uint8_t n);           // 출력 n을 반대로
   void allOff();                    // 모든 출력 끄기
   bool outputState(uint8_t n) const;  // 출력 n이 켜져 있는지
+  // 출력 n을 onMs 켜고 offMs 끄기를 계속 되풀이한다 (켜진 상태에서 시작, update() 필요).
+  // 멈추려면 output(n, OFF)나 다른 output()/toggle()/allOff()를 부른다.
+  bool blink(uint8_t n, unsigned long onMs, unsigned long offMs);
+  // 예약된 출력이 바뀌기까지 남은 초 (올림). 예약이 없거나 깜빡이는 중이면 0
+  uint32_t remain(uint8_t n) const;
+
+  // ---- 출력이 바뀔 때 알림 ----
+  // 출력이 실제로 바뀔 때마다 fn(n, on)을 부른다. output(), 자동 끄기, 늦게 켜기, blink 모두.
+  // 원격(MQTT)으로 상태를 알릴 때 쓴다. fn 안에서는 오래 걸리는 일을 하지 않는다.
+  typedef void (*OutputChangeFn)(uint8_t n, bool on);
+  void onOutputChange(OutputChangeFn fn) { _onChange = fn; }
+
+  // ---- 한꺼번에 (bit0 = 1번, bit1 = 2번 ...) ----
+  uint16_t inputBits() const;            // 모든 입력 상태
+  uint16_t outputBits() const;           // 모든 출력 상태
+  void outputBits(uint16_t bits);        // 모든 출력을 한꺼번에 바꾸기 (예약, 깜빡임은 취소)
+  String inputText() const;              // "0101" (맨 왼쪽이 IN1, 1 = 들어옴)
+  String outputText() const;             // "0101" (맨 왼쪽이 OUT1, 1 = 켜짐)
 
   // ---- 입력 (n = 1부터) ----
   bool input(uint8_t n) const;    // 입력 n이 들어와 있는지 (떨림 제거됨)
@@ -60,6 +78,10 @@ public:
   // ---- 타이머 (PLC식) ----
   bool onDelay(uint8_t n, unsigned long ms) const;   // TON: 입력 n이 ms 동안 계속 들어와 있으면 true
   bool offDelay(uint8_t n, unsigned long ms) const;  // TOF: 입력 n이 들어와 있는 동안, 그리고 꺼진 뒤 ms 동안 true
+
+  // ---- 카운터 (PLC식 CTU) ----
+  uint32_t count(uint8_t n) const;  // 입력 n이 들어온 횟수 (떨림 제거 뒤, begin()부터)
+  void resetCount(uint8_t n);       // 입력 n의 횟수를 0으로
 
   // ---- 보드 ----
   void led(bool on);  // 보드 내장 LED
@@ -96,8 +118,12 @@ private:
   bool _inEverOn[MAX_CH];
   unsigned long _inReadChange[MAX_CH];    // 읽은 값이 바뀐 시각 (떨림 제거용)
   unsigned long _inStableChange[MAX_CH];  // 떨림을 걸러 낸 상태가 바뀐 시각 (타이머용)
+  uint32_t _inCount[MAX_CH];              // 들어온 횟수 (카운터)
   bool _out[MAX_CH];
-  // 예약: 0 = 없음, 1 = 기다리는 중(지나면 _pendOn으로 바꿈), 2 = 동작 중(지나면 끔)
+  OutputChangeFn _onChange = nullptr;
+  unsigned long _blinkOnMs[MAX_CH];
+  unsigned long _blinkOffMs[MAX_CH];
+  // 예약: 0 = 없음, 1 = 기다리는 중(지나면 _pendOn으로 바꿈), 2 = 동작 중(지나면 끔), 3 = 깜빡임
   uint8_t _pend[MAX_CH];
   bool _pendOn[MAX_CH];              // 기다린 뒤 바꿀 값
   unsigned long _pendStart[MAX_CH];  // 지금 단계를 시작한 시각

@@ -31,7 +31,9 @@ I2R_PLC::I2R_PLC(I2R_Board board) : _board(board) {
   for (uint8_t i = 0; i < MAX_CH; i++) {
     _inStable[i] = _inLastRead[i] = _inRise[i] = _inFall[i] = _inEverOn[i] = false;
     _inReadChange[i] = _inStableChange[i] = 0;
+    _inCount[i] = 0;
     _out[i] = false;
+    _blinkOnMs[i] = _blinkOffMs[i] = 0;
     _pend[i] = 0;
     _pendOn[i] = false;
     _pendStart[i] = _pendMs[i] = _pendDurMs[i] = 0;
@@ -88,26 +90,33 @@ void I2R_PLC::update() {
     if (now - _inReadChange[i] >= _debounceMs && v != _inStable[i]) {
       _inStable[i] = v;
       _inStableChange[i] = now;
-      if (v) { _inRise[i] = true; _inEverOn[i] = true; }
+      if (v) { _inRise[i] = true; _inEverOn[i] = true; _inCount[i]++; }
       else   { _inFall[i] = true; }
     }
   }
-  // 예약된 출력: 기다리는 시간이 지나면 바꾸고, 동작 시간이 지나면 끈다
+  // 예약된 출력: 기다리는 시간이 지나면 바꾸고, 동작 시간이 지나면 끄고, 깜빡임은 뒤집는다.
+  // 다음 예약을 먼저 정하고 핀은 맨 나중에 바꾼다 (알림 함수 안에서 output()을 불러도 엉키지 않게).
   for (uint8_t i = 0; i < _numOut; i++) {
     if (_pend[i] == 0 || now - _pendStart[i] < _pendMs[i]) continue;
+    bool v;
     if (_pend[i] == 1) {
-      writeOut(i, _pendOn[i]);
-      if (_pendOn[i] && _pendDurMs[i] > 0) {  // 켰고 동작 시간이 있으면 끄기 예약
+      v = _pendOn[i];
+      if (v && _pendDurMs[i] > 0) {  // 켰고 동작 시간이 있으면 끄기 예약
         _pend[i] = 2;
         _pendStart[i] = now;
         _pendMs[i] = _pendDurMs[i];
       } else {
         _pend[i] = 0;
       }
-    } else {
-      writeOut(i, false);
+    } else if (_pend[i] == 2) {
+      v = false;
       _pend[i] = 0;
+    } else {  // 3 = 깜빡임
+      v = !_out[i];
+      _pendStart[i] = now;
+      _pendMs[i] = v ? _blinkOnMs[i] : _blinkOffMs[i];
     }
+    writeOut(i, v);
   }
 
   if (_hasSensor) sensorUpdate();
@@ -127,21 +136,23 @@ bool I2R_PLC::checkOut(uint8_t n) {
 }
 
 void I2R_PLC::writeOut(uint8_t i, bool on) {
+  bool changed = (_out[i] != on);
   _out[i] = on;
   digitalWrite(_outPins[i], on ? HIGH : LOW);
+  if (changed && _onChange) _onChange(i + 1, on);  // 실제로 바뀌었을 때만 알린다
 }
 
 bool I2R_PLC::output(uint8_t n, bool on, uint32_t seconds) {
   if (!checkOut(n)) return false;
   uint8_t i = n - 1;
-  writeOut(i, on);
 
-  // 켜면서 시간을 주면 자동 끄기 예약, 그 밖에는 예약 취소
+  // 켜면서 시간을 주면 자동 끄기 예약, 그 밖에는 예약(깜빡임 포함) 취소
   _pend[i] = (on && seconds > 0) ? 2 : 0;
   if (_pend[i]) {
     _pendStart[i] = millis();
     _pendMs[i] = seconds * 1000UL;
   }
+  writeOut(i, on);
   return true;
 }
 
@@ -170,6 +181,57 @@ bool I2R_PLC::outputState(uint8_t n) const {
   return validOut(n) ? _out[n - 1] : false;
 }
 
+bool I2R_PLC::blink(uint8_t n, unsigned long onMs, unsigned long offMs) {
+  if (onMs == 0 || offMs == 0) return output(n, onMs > 0);  // 한쪽이 0이면 깜빡일 수 없다
+  if (!checkOut(n)) return false;
+  uint8_t i = n - 1;
+  _pend[i] = 3;
+  _blinkOnMs[i] = onMs;
+  _blinkOffMs[i] = offMs;
+  _pendStart[i] = millis();
+  _pendMs[i] = onMs;
+  writeOut(i, true);  // 켜진 상태에서 시작
+  return true;
+}
+
+uint32_t I2R_PLC::remain(uint8_t n) const {
+  if (!validOut(n)) return 0;
+  uint8_t i = n - 1;
+  if (_pend[i] != 1 && _pend[i] != 2) return 0;
+  unsigned long passed = millis() - _pendStart[i];
+  if (passed >= _pendMs[i]) return 0;
+  return (_pendMs[i] - passed + 999) / 1000;  // 올림: 0.2초 남아도 1초로
+}
+
+// ---- 한꺼번에 ----
+uint16_t I2R_PLC::inputBits() const {
+  uint16_t bits = 0;
+  for (uint8_t i = 0; i < _numIn; i++) if (_inStable[i]) bits |= (1U << i);
+  return bits;
+}
+
+uint16_t I2R_PLC::outputBits() const {
+  uint16_t bits = 0;
+  for (uint8_t i = 0; i < _numOut; i++) if (_out[i]) bits |= (1U << i);
+  return bits;
+}
+
+void I2R_PLC::outputBits(uint16_t bits) {
+  for (uint8_t n = 1; n <= _numOut; n++) output(n, (bits >> (n - 1)) & 1);
+}
+
+String I2R_PLC::inputText() const {
+  String s;
+  for (uint8_t i = 0; i < _numIn; i++) s += _inStable[i] ? '1' : '0';
+  return s;
+}
+
+String I2R_PLC::outputText() const {
+  String s;
+  for (uint8_t i = 0; i < _numOut; i++) s += _out[i] ? '1' : '0';
+  return s;
+}
+
 // ---- 입력 ----
 bool I2R_PLC::input(uint8_t n) const {
   return validIn(n) ? _inStable[n - 1] : false;
@@ -196,6 +258,15 @@ bool I2R_PLC::offDelay(uint8_t n, unsigned long ms) const {
   if (_inStable[i]) return true;
   if (!_inEverOn[i]) return false;  // 한 번도 들어온 적이 없으면 false
   return millis() - _inStableChange[i] < ms;
+}
+
+// ---- 카운터 ----
+uint32_t I2R_PLC::count(uint8_t n) const {
+  return validIn(n) ? _inCount[n - 1] : 0;
+}
+
+void I2R_PLC::resetCount(uint8_t n) {
+  if (validIn(n)) _inCount[n - 1] = 0;
 }
 
 // ---- 보드 ----

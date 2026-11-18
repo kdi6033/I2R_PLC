@@ -66,6 +66,8 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | `plc.toggle(n)` | 출력 n을 반대로 | ✅ |
 | `plc.allOff()` | 모든 출력 끄기 | ✅ |
 | `plc.outputState(n)` | 출력 n이 켜져 있으면 `true` | ✅ |
+| `plc.blink(n, 켜짐ms, 꺼짐ms)` | 출력 n을 계속 깜빡이기 (켜진 상태에서 시작). `output(n, OFF)`로 멈춤 | 🛠️ |
+| `plc.remain(n)` | 예약된 출력이 바뀌기까지 남은 초 (올림). 예약이 없으면 0 | 🛠️ |
 
 ### 입력 (번호는 1부터)
 
@@ -82,6 +84,22 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 |---|---|:---:|
 | `plc.onDelay(n, ms)` | TON. 입력 n이 ms 동안 계속 들어와 있으면 `true`, 꺼지면 바로 `false` | ✅ |
 | `plc.offDelay(n, ms)` | TOF. 입력 n이 들어와 있는 동안, 그리고 꺼진 뒤 ms 동안 `true` | ✅ |
+
+### 카운터 (PLC식)
+
+| 함수 | 설명 | 상태 |
+|---|---|:---:|
+| `plc.count(n)` | CTU. 입력 n이 들어온 횟수 (떨림 제거 뒤, `begin()`부터) | 🛠️ |
+| `plc.resetCount(n)` | 입력 n의 횟수를 0으로 | 🛠️ |
+
+### 상태 알리기 (원격 제어용)
+
+| 함수 | 설명 | 상태 |
+|---|---|:---:|
+| `plc.onOutputChange(함수)` | 출력이 실제로 바뀔 때마다 `함수(n, on)`을 부름. 자동 끄기, 늦게 켜기, 깜빡임도 알림 | 🛠️ |
+| `plc.inputBits()`, `plc.outputBits()` | 모든 입력/출력 상태를 숫자 하나로 (bit0 = 1번). 바뀌었는지 비교할 때 | 🛠️ |
+| `plc.outputBits(값)` | 모든 출력을 한꺼번에 바꾸기 (예약, 깜빡임은 취소) | 🛠️ |
+| `plc.inputText()`, `plc.outputText()` | `"0101"` 문자 (맨 왼쪽이 1번, 1 = 켜짐). 보내거나 시리얼로 볼 때 | 🛠️ |
 
 ### 보드
 
@@ -108,6 +126,9 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | OnDelay | IN1을 3초 넣고 있어야 OUT1 켜기 (TON) | ✅ |
 | TempRelay | 30도 이상 OUT1 켜기, 28도 이하 끄기 (i2r-03) | ✅ |
 | BoardCheck | 입력, 출력, 버튼, 온습도를 1초마다 시리얼로 보기 | ✅ |
+| Counter | IN1이 5번 들어오면 OUT1 켜기, IN2로 처음부터 (CTU) | 🛠️ |
+| BlinkOutput | IN1이 들어오면 OUT1 깜빡이기, IN2로 멈춤 | 🛠️ |
+| StateReport | 출력이 바뀔 때 알림, 입력이 바뀔 때만 보여 주기, 남은 시간, 시리얼로 `1010` 넣어 출력 한꺼번에 바꾸기 | 🛠️ |
 
 예제는 `I2R_PLC plc(I2R_03);`로 되어 있습니다. 내 보드에 맞게 `I2R_02`나 `I2R_04`로 바꾸세요.
 
