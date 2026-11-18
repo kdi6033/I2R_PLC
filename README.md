@@ -98,7 +98,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 |---|---|:---:|
 | `plc.onOutputChange(함수)` | 출력이 실제로 바뀔 때마다 `함수(n, on)`을 부름. 자동 끄기, 늦게 켜기, 깜빡임도 알림 | ✅ |
 | `plc.inputBits()` | 모든 입력 상태를 숫자 하나로 (bit0 = IN1). 바뀌었는지 비교할 때 | ✅ |
-| `plc.outputBits()` | 모든 출력 상태를 숫자 하나로 (bit0 = OUT1) | 🛠️ |
+| `plc.outputBits()` | 모든 출력 상태를 숫자 하나로 (bit0 = OUT1) | ✅ |
 | `plc.outputBits(값)` | 모든 출력을 한꺼번에 바꾸기 (예약, 깜빡임은 취소) | ✅ |
 | `plc.inputText()`, `plc.outputText()` | `"0101"` 문자 (맨 왼쪽이 1번, 1 = 켜짐). 보내거나 시리얼로 볼 때 | ✅ |
 
