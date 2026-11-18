@@ -64,7 +64,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | `plc.output(n, ON, 초)` | 켜고 정한 시간(초) 뒤 자동으로 끄기 (`update()`가 끔) | ✅ |
 | `plc.output(n, ON, 기다림초, 동작초)` | 기다린 뒤 켜고, 동작 시간이 지나면 끄기. 동작초가 0이면 켜 둔 채로 둠 | ✅ |
 | `plc.toggle(n)` | 출력 n을 반대로 | ✅ |
-| `plc.allOff()` | 모든 출력 끄기 | 🛠️ |
+| `plc.allOff()` | 모든 출력 끄기 | ✅ |
 | `plc.outputState(n)` | 출력 n이 켜져 있으면 `true` | ✅ |
 
 ### 입력 (번호는 1부터)
@@ -87,8 +87,8 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 
 | 함수 | 설명 | 상태 |
 |---|---|:---:|
-| `plc.led(ON)` | 보드 내장 LED | 🛠️ |
-| `plc.button()` | 공장 초기화 버튼이 눌려 있으면 `true` | 🛠️ |
+| `plc.led(ON)` | 보드 내장 LED | ✅ |
+| `plc.button()` | 공장 초기화 버튼이 눌려 있으면 `true` | ✅ |
 | `plc.temperature()`, `plc.humidity()` | i2r-03 온도(℃), 습도(%RH). 센서가 없으면 `NAN` | ✅ |
 | `plc.sensorOk()` | 온습도 센서를 찾았으면 `true` | ✅ |
 
@@ -106,7 +106,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | StairLight | IN1이 꺼진 뒤에도 5초 더 OUT1 켜 두기 (TOF) | ✅ |
 | OnDelay | IN1을 3초 넣고 있어야 OUT1 켜기 (TON) | ✅ |
 | TempRelay | 30도 이상 OUT1 켜기, 28도 이하 끄기 (i2r-03) | ✅ |
-| BoardCheck | 입력, 출력, 버튼, 온습도를 1초마다 시리얼로 보기 | 🛠️ |
+| BoardCheck | 입력, 출력, 버튼, 온습도를 1초마다 시리얼로 보기 | ✅ |
 
 예제는 `I2R_PLC plc(I2R_03);`로 되어 있습니다. 내 보드에 맞게 `I2R_02`나 `I2R_04`로 바꾸세요.
 
