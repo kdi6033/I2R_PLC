@@ -3,8 +3,8 @@
 i2r-02, i2r-03, i2r-04 IoT PLC(ESP32)를 위한 Arduino 라이브러리입니다.
 보드 종류만 고르면 핀 번호를 몰라도 `input(1)`, `output(1, ON)`처럼 번호로 씁니다.
 
-> 🛠️ **만드는 중입니다 (0.1.0).** 함수를 하나씩 만들고 실제 보드에서 확인하고 있습니다. 아래 함수표의 **상태**를 보세요.
-> ✅ 보드 확인 완료 (i2r-03) · 🛠️ 만드는 중 (컴파일만 확인, 이름과 동작이 바뀔 수 있음)
+> **1.0.0** · 모든 함수와 예제를 i2r-03 보드에서 확인했습니다 (✅). i2r-02, i2r-04는 같은 코드에 핀 표만 다릅니다.
+> 공개한 함수 이름은 바꾸지 않습니다. 원격 제어(Wi-Fi, MQTT)는 [I2R_IoT](https://github.com/kdi6033/I2R_IoT)와 함께 쓰는 헤더로 더할 예정입니다.
 
 ```cpp
 #include <I2R_PLC.h>
@@ -36,13 +36,15 @@ void loop() {
 ## 설치
 
 1. Arduino IDE에 ESP32 보드 패키지(esp32 by Espressif, 3.0 이상)를 설치합니다.
-2. 이 저장소에서 **Code → Download ZIP**으로 내려받고, Arduino IDE에서 **스케치 → 라이브러리 포함하기 → .ZIP 라이브러리 추가**로 설치합니다.
-   (완성되면 라이브러리 매니저에서 **I2R_PLC**로 찾아 설치할 수 있게 등록합니다.)
+2. Arduino IDE 왼쪽의 **라이브러리 매니저**에서 `I2R_PLC`를 찾아 **INSTALL**을 누릅니다.
 3. 보드 설정: ESP32 Dev Module, Flash Size 8MB, Partition Scheme Huge APP
 
 ```
 FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
+arduino-cli lib install I2R_PLC
 ```
+
+라이브러리 매니저에 아직 보이지 않으면(등록 직후), 이 저장소에서 **Code → Download ZIP**으로 내려받고 **스케치 → 라이브러리 포함하기 → .ZIP 라이브러리 추가**로 설치합니다.
 
 ## 함수
 
@@ -54,6 +56,7 @@ FQBN = esp32:esp32:esp32:FlashSize=8M,PartitionScheme=huge_app
 | `plc.begin()` | `setup()`에서 한 번. 핀 설정, 출력 모두 끄기, 센서 찾기 | ✅ |
 | `plc.update()` | `loop()` 맨 앞에서 매번. 예약된 출력 처리, 입력 읽기, 떨림 제거, 센서 읽기 | ✅ |
 | `plc.type()` | 보드 이름 `"i2r-02"`, `"i2r-03"`, `"i2r-04"` (옛 i2r 펌웨어의 type과 같음) | ✅ |
+| `plc.board()` | 만들 때 정한 보드 종류 (`I2R_02`, `I2R_03`, `I2R_04`). `if (plc.board() == I2R_03)`처럼 비교 | ✅ |
 | `plc.inputCount()`, `plc.outputCount()` | 입력, 출력 개수 (4 또는 8) | ✅ |
 
 ### 출력 (번호는 1부터)
