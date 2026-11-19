@@ -31,9 +31,9 @@ void loop() {
 <th width="33%">i2r-04</th>
 </tr>
 <tr>
-<td><img src="images/i2r-02.jpg" alt="i2r-02 PLC" width="100%"></td>
-<td><img src="images/i2r-03.jpg" alt="i2r-03 PLC" width="100%"></td>
-<td><img src="images/i2r-04.jpg" alt="i2r-04 PLC" width="100%"></td>
+<td><img src="images/i2r-02-kc.jpg" alt="i2r-02 PLC" width="100%"></td>
+<td><img src="images/i2r-03-kc.jpg" alt="i2r-03 PLC" width="100%"></td>
+<td><img src="images/i2r-04-kc.jpg" alt="i2r-04 PLC" width="100%"></td>
 </tr>
 <tr>
 <td><code>I2R_PLC plc(I2R_02);</code></td>
