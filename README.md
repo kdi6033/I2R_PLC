@@ -24,11 +24,33 @@ void loop() {
 
 ## 지원 보드
 
-| 보드 | 입력 | 출력 | 그 밖에 |
-|---|---|---|---|
-| `I2R_02` | 4 (무전압 접점) | 릴레이 4 | |
-| `I2R_03` | 4 (전압 입력, COM 사용) | 릴레이 4 | AHT21 온습도 센서 |
-| `I2R_04` | 8 (무전압 접점) | 릴레이 8 | |
+<table>
+<tr>
+<th width="33%">i2r-02</th>
+<th width="33%">i2r-03</th>
+<th width="33%">i2r-04</th>
+</tr>
+<tr>
+<td><img src="images/i2r-02.jpg" alt="i2r-02 PLC" width="100%"></td>
+<td><img src="images/i2r-03.jpg" alt="i2r-03 PLC" width="100%"></td>
+<td><img src="images/i2r-04.jpg" alt="i2r-04 PLC" width="100%"></td>
+</tr>
+<tr>
+<td><code>I2R_PLC plc(I2R_02);</code></td>
+<td><code>I2R_PLC plc(I2R_03);</code></td>
+<td><code>I2R_PLC plc(I2R_04);</code></td>
+</tr>
+<tr>
+<td>입력 4 (무전압 접점)<br>릴레이 4 (30A 1개, 10A 3개)</td>
+<td>입력 4 (전압 입력, COM 사용)<br>릴레이 4 (30A 1개, 10A 3개)<br><b>AHT21 온습도 센서</b></td>
+<td>입력 8 (무전압 접점)<br>릴레이 8</td>
+</tr>
+<tr>
+<td><b>이럴 때</b><br>스위치, 버튼, 센서 접점으로 전등, 펌프, 환풍기를 켜고 끄기. 계단 조명, 물탱크 펌프처럼 장치가 몇 개인 곳</td>
+<td><b>이럴 때</b><br>온도와 습도로 환풍기, 히터, 가습기를 제어. 비닐하우스, 축사, 창고, 서버실. 다른 장비가 보내는 전압 신호를 입력으로 받을 때</td>
+<td><b>이럴 때</b><br>장치가 많은 곳. 여러 구역 조명, 여러 대의 모터와 밸브, 작은 생산 설비나 교육용 PLC 실습</td>
+</tr>
+</table>
 
 - i2r-02, i2r-04 입력 단자에 따로 전압을 넣으면 고장 납니다. 스위치처럼 연결만 하세요.
 - 보드별 핀 맵과 배선은 [i2r-plc 키트](https://github.com/kdi6033/i2r-plc)의 `boards` 폴더에 있습니다.
